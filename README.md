@@ -42,7 +42,7 @@ your launch parameters.
 it has three functions, which can be invoked anywhere at any time: kernel_1d(span), kernel_2d(span, span), and kernel_3d(span, span, span). 
 calling one of these functions will configure the launch parameters stored in the manager object to create launch parameters describing 
 a kernel of the given dimensionality and the given size. when you want to actually launch the kernel, you pass in the num_blocks and the
-threads_per_block stored by the launch manager. I usually do this with the LAUNCH macro (<<<LAUNCH>>>), which just evaluates to
+threads_per_block stored by the launch manager. I usually do this with the LAUNCH macro (\<\<\<LAUNCH>>>), which just evaluates to
 sk::configure::num_blocks, sk::configure::threads_per_block 
 
 
