@@ -88,8 +88,11 @@ write some documentation on how to do this, pending interest.
 
 
 ## planned features:
+	
 interoperability between sk::Tensor and more external libraries
+	
 cleaning up the FOR_MXN macros
+	
 user control over the names of the dimensions in on::Tensor
 
 
