@@ -1,7 +1,6 @@
 
 
-SKELETON KEY
-
+# SKELETON KEY
 
 this library is a collection of code I've been using to reduce much of the (often relentless) boilerplate needed to write with CUDA, while still keeping 
 things conceptually similar to raw CUDA. I find it particularly useful for computer vision and cellular automata, tasks which operate upon a 2d matrix. 
@@ -13,8 +12,8 @@ The Tensor struct
 A series of macros for use within kernels
 
 
-example:
-
+## code example:
+```
 __global__ void add_by_element (sk::Device_Ptr<int> A, sk::Device_Ptr<int> B) {
 	DIMS_2D(col, row);
 	BOUNDS_2D(A.spans[0], A.spans[1]);
@@ -32,9 +31,9 @@ void launch_add_by_element(sk::Tensor<int>& A){
 	SYNC_KERNEL(add_by_element);
 
 }
+```
 
-
-using the launch manager:
+## using the launch manager:
 
 the launch manager is a static struct which configures and stores your launch parameters for you (i.e. <<<num_blocks, threads_per_block>>>). 
 since it is a static struct, there is (in theory) only one launch manager object which is generated at compile time, and hovers around holding
@@ -47,7 +46,7 @@ threads_per_block stored by the launch manager. I usually do this with the LAUNC
 sk::configure::num_blocks, sk::configure::threads_per_block 
 
 
-using the macros:
+## using the macros:
 
 Skeleton Key provides a series of macros to be used within kernels. The two main ones which are usually called at the start of every kernel are
 the DIMS macros (DIMS_1D(dim), DIMS_2D(dim, dim), DIMS_3D(dim, dim, dim)), and the BOUNDS macros (BOUNDS_1D(), BOUNDS_2D(), BOUNDS_3D()). 
@@ -69,7 +68,7 @@ at each step with different iterators. it's basically a doubly nested for loop w
 the starting element and only looks at the neighbors, whereas the INCLUSIVE version includes the starting element.
 
 
-using the Tensor struct:
+## using the Tensor struct:
 
 the Tensor struct is a straightforward container for 1d, 2d, 3d, and 4d matrices (a.k.a. tensors). It automatically manages transfer/synchronization 
 of data between host and device for the user. It tries not to transfer data between the host and device until it is necessary to do so, for performance 
@@ -88,7 +87,7 @@ Let me know your preferred library and I can try to add it for you! Or if you'd 
 write some documentation on how to do this, pending interest.
 
 
-planned features:
+## planned features:
 	interoperability between sk::Tensor and more external libraries
 	cleaning up the FOR_MXN macros
 	user control over the names of the dimensions in on::Tensor
