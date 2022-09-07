@@ -96,8 +96,7 @@ interoperability between sk::Tensor and more external libraries
 	
 cleaning up the FOR_MXN macros
 	
-allow user configuration for proper names/cardinality of dimensions within Tensor, as well as some structure to handle 
-transformations between differently-linearized n dimensional matrices.
+allow user configuration for names/cardinality of dimensions within Tensor
 
 
 
