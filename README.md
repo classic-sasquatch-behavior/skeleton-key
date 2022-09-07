@@ -4,11 +4,14 @@
 
 this library is a collection of code I've been using to reduce much of the (often relentless) boilerplate needed to write with CUDA, while still keeping 
 things conceptually similar to raw CUDA. I find it particularly useful for computer vision and cellular automata, tasks which operate upon a 2d matrix. 
-Specifically, the library is designed to bring into focus the abstract model of CUDA as a tool which works upon actual 2d matrices.
+Specifically, the library is designed to bring into focus the abstract model of CUDA as a tool which works spatially on matrices.
 
 This library has three parts:
+
 The launch manager
+
 The Tensor struct
+
 A series of macros for use within kernels
 
 
@@ -93,7 +96,8 @@ interoperability between sk::Tensor and more external libraries
 	
 cleaning up the FOR_MXN macros
 	
-user control over the names of the dimensions in on::Tensor
+allow user configuration for proper names/cardinality of dimensions within Tensor, as well as some structure to handle 
+transformations between differently-linearized n dimensional matrices.
 
 
 
