@@ -7,4 +7,3 @@ typedef unsigned char uchar;
 #include"src/Launch.h"
 #include"src/Error.h"
 #include"src/Tensor.h"
-#include"src/Key.h"
