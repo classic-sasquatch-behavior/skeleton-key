@@ -4,7 +4,7 @@
 
 this library is a collection of code I've been using to reduce much of the (often relentless) boilerplate needed to write with CUDA, while still keeping 
 things conceptually similar to raw CUDA. I find it particularly useful for computer vision and cellular automata, tasks which operate upon a 2d matrix. 
-Specifically, the library is designed to bring into focus the abstract model of CUDA as a tool which works upon actual 2d matrices.
+Specifically, the library is designed to bring into focus the abstract model of CUDA as a tool which works spatially on matrices.
 
 This library has three parts:
 The launch manager
