@@ -1,21 +1,6 @@
 #pragma once
-#include<cuda.h>
-#include<cuda_runtime.h>
-#include<string>
-#include<vector>
 
-//check if arrayfire is being used
-#ifdef AF_API_VERSION
-#include"arrayfire.h"
-#endif
-
-//check if OpenCV is being used
-#ifdef CV_VERSION
-#include"opencv2/core.hpp"
-#endif
-
-
-
+#include"external_libs.h"
 
 namespace sk {
 
@@ -46,10 +31,10 @@ namespace sk {
 
 		__device__ uint maj() const { return spans[0]; }
 		__device__ uint min() const { return spans[1]; }
-		__device__ uint cub() const { return spans[2]; }
+		__device__ uint cbc() const { return spans[2]; }
 		__device__ uint hyp() const { return spans[3]; }
 
-		__device__ Type& operator ()(int maj_pos, int min_pos = 0, int cub_pos = 0, int hyp_pos = 0) { return device_data[(((((maj_pos * min()) + min_pos) * cub()) + cub_pos) * hyp()) + hyp_pos]; }
+		__device__ Type& operator ()(int maj_pos, int min_pos = 0, int cbc_pos = 0, int hyp_pos = 0) { return device_data[(((((maj_pos * min()) + min_pos) * cbc()) + cbc_pos) * hyp()) + hyp_pos]; }
 
 	};
 
@@ -72,14 +57,14 @@ namespace sk {
 
 		__host__ uint maj() const { return spans[0]; }
 		__host__ uint min() const { return spans[1]; }
-		__host__ uint cub() const { return spans[2]; }
+		__host__ uint cbc() const { return spans[2]; }
 		__host__ uint hyp() const { return spans[3]; }
 
 		bool synced = false;
 		sk::host_or_device up_to_date = sk::host;
 
 		//get data from host. checks if we've been messing around with the device data, and if so synchronises
-		__host__ Type& operator ()(int maj, int min = 0, int cub = 0, int hyp = 0) {
+		__host__ Type& operator ()(int maj, int min = 0, int cbc = 0, int hyp = 0) {
 			switch (synced) {
 				case true: desync(host); break;
 				case false: switch (up_to_date) {
@@ -88,10 +73,10 @@ namespace sk {
 				} break;
 			}
 
-			return host_data[(((((maj * min) + min) * cub) + cub) * hyp) + hyp];
+			return host_data[(((((maj * min) + min) * cbc) + cbc) * hyp) + hyp];
 		}
 
-		int num_elements() const { return maj() * min() * cub() * hyp(); }
+		int num_elements() const { return maj() * min() * cbc() * hyp(); }
 		int bytesize() const { return (num_elements() * sizeof(Type)); }
 
 
@@ -305,7 +290,7 @@ namespace sk {
 		}
 
 		//to array
-		operator af::array() { return af::array((dim_t)maj(), (dim_t)min(), (dim_t)cub(), (dim_t)hyp(), host_data); }
+		operator af::array() { return af::array((dim_t)maj(), (dim_t)min(), (dim_t)cbc(), (dim_t)hyp(), host_data); }
 		#endif
 
 		#ifdef CV_VERSION
