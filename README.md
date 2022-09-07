@@ -7,8 +7,11 @@ things conceptually similar to raw CUDA. I find it particularly useful for compu
 Specifically, the library is designed to bring into focus the abstract model of CUDA as a tool which works spatially on matrices.
 
 This library has three parts:
+
 The launch manager
+
 The Tensor struct
+
 A series of macros for use within kernels
 
 
