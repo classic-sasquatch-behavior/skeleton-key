@@ -21,24 +21,24 @@ namespace sk {
 
 		uint num_dims = 0;
 
-		uint spans[4] = { 1, 1, 1, 1 };
+		uint dims[4] = { 1, 1, 1, 1 };
 
-		Device_Ptr(uint spans_in[4], Type* device_data_in) {
+		Device_Ptr(uint dims_in[4], Type* device_data_in) {
 			for (int i = 0; i < 4; i++) {
-				spans[i] = spans_in[i];
-				if (spans[i] > 1) num_dims++;
+				dims[i] = dims_in[i];
+				if (dims[i] > 1) num_dims++;
 			}
 
 			device_data = device_data_in;
 
 		}
 
-		__device__ uint maj() const { return spans[0]; }
-		__device__ uint min() const { return spans[1]; }
-		__device__ uint cbc() const { return spans[2]; }
-		__device__ uint hyp() const { return spans[3]; }
+		__device__ uint first_dim() const { return dims[0]; }
+		__device__ uint second_dim() const { return dims[1]; }
+		__device__ uint third_dim() const { return dims[2]; }
+		__device__ uint fourth_dim() const { return dims[3]; }
 
-		__device__ Type& operator ()(int maj_pos, int min_pos = 0, int cbc_pos = 0, int hyp_pos = 0) { return device_data[(((((maj_pos * min()) + min_pos) * cbc()) + cbc_pos) * hyp()) + hyp_pos]; }
+		__device__ Type& operator ()(int first_pos, int second_pos = 0, int third_pos = 0, int fourth_pos = 0) { return device_data[(((((first_pos * second_dim()) + second_pos) * third_dim()) + third_pos) * fourth_dim()) + fourth_pos]; }
 
 	};
 
@@ -57,18 +57,18 @@ namespace sk {
 
 		uint num_dims = 0;
 
-		uint spans[4] = { 1, 1, 1, 1 };
+		uint dims[4] = { 1, 1, 1, 1 };
 
-		__host__ uint maj() const { return spans[0]; }
-		__host__ uint min() const { return spans[1]; }
-		__host__ uint cbc() const { return spans[2]; }
-		__host__ uint hyp() const { return spans[3]; }
+		__host__ uint first_dim() const { return dims[0]; }
+		__host__ uint second_dim() const { return dims[1]; }
+		__host__ uint third_dim() const { return dims[2]; }
+		__host__ uint fourth_dim() const { return dims[3]; }
 
 		bool synced = false;
 		sk::host_or_device up_to_date = sk::host;
 
 		//get data from host. checks if we've been messing around with the device data, and if so synchronises
-		__host__ Type& operator ()(int maj, int min = 0, int cbc = 0, int hyp = 0) {
+		__host__ Type& operator ()(int first_coord, int second_coord = 0, int third_coord = 0, int fourth_coord = 0) {
 			switch (synced) {
 				case true: desync(host); break;
 				case false: switch (up_to_date) {
@@ -77,10 +77,10 @@ namespace sk {
 				} break;
 			}
 
-			return host_data[(((((maj * min) + min) * cbc) + cbc) * hyp) + hyp];
+			return host_data[(((((first_coord * second_dim()) + second_coord) * third_dim()) + third_coord) * fourth_dim()) + fourth_coord];
 		}
 
-		int num_elements() const { return maj() * min() * cbc() * hyp(); }
+		int num_elements() const { return first_dim() * second_dim() * third_dim() * fourth_dim(); }
 		int bytesize() const { return (num_elements() * sizeof(Type)); }
 
 
@@ -96,7 +96,7 @@ namespace sk {
 		//copy constructor
 		Tensor(const Tensor& input) {
 			name = input.name;
-			sk_Copy(spans, input.spans, 4);
+			sk_Copy(dims, input.dims, 4);
 			num_dims = input.num_dims;
 			initialize_memory();
 
@@ -119,11 +119,11 @@ namespace sk {
 		//copy assignment operator
 		void operator=(const Tensor& input) {
 			name = input.name;
-			sk_Copy(spans, input.spans, 4);
+			sk_Copy(dims, input.dims, 4);
 			num_dims = input.num_dims;
 
 			//this part is a bit nonsensical, I need to rethink it. it's trying to make sure it copies the up-to-date version of the input Tensor
-			if (!input.synced && (input.up_to_date == device)) {
+			if ((!input.synced) && (input.up_to_date == device)) {
 				desync(device);
 				cudaMemcpy(device_data, input.device_data, bytesize(), cudaMemcpyDeviceToDevice);
 				sync();
@@ -138,15 +138,15 @@ namespace sk {
 			}
 		}
 
-		//initialization with list of spans
-		Tensor(std::vector<uint> in_spans, Type constant = 0, std::string in_name = "default") {
+		//initialization with list of dims
+		Tensor(std::vector<uint> in_dims, Type constant = 0, std::string in_name = "default") {
 			name = in_name;
-			int num_dims_in = in_spans.size();
+			int num_dims_in = in_dims.size();
 			num_dims = 0;
 			for (int i = 0; i < num_dims_in; i++) {
-				int current_span = in_spans[i];
-				if (current_span > 1) {
-					spans[i] = in_spans[i];
+				int current_dim = in_dims[i];
+				if (current_dim > 1) {
+					dims[i] = in_dims[i];
 					num_dims++;
 				}
 			}
@@ -241,7 +241,7 @@ namespace sk {
 				} break;
 			}
 
-			return(Device_Ptr<Type>(spans, device_data));
+			return(Device_Ptr<Type>(dims, device_data));
 		}
 
 
@@ -267,7 +267,7 @@ namespace sk {
 		void operator=(std::vector<Type> input) {
 			desync(host);
 			num_dims = 1;
-			spans[0] = input.size();
+			dims[0] = input.size();
 
 			std::copy(input.begin(), input.end(), host_data);
 
@@ -283,7 +283,7 @@ namespace sk {
 
 			num_dims = input.numdims();
 			for (int i = 0; i < num_dims; i++) {
-				spans[i] = input.dims(i);
+				dims[i] = input.dims(i);
 			}
 
 			desync(device);
@@ -294,7 +294,7 @@ namespace sk {
 		}
 
 		//to array
-		operator af::array() { return af::array((dim_t)maj(), (dim_t)min(), (dim_t)cbc(), (dim_t)hyp(), host_data); }
+		operator af::array() { return af::array((dim_t)first_dim(), (dim_t)second_dim(), (dim_t)third_dim(), (dim_t)fourth_dim(), host_data); }
 		#endif
 
 		#ifdef CV_VERSION
@@ -305,9 +305,9 @@ namespace sk {
 			bool has_channels = (input.channels() > 1);
 			num_dims += has_channels;
 
-			spans[0] = input.rows;
-			spans[1] = input.cols;
-			spans[2] = input.channels();
+			dims[0] = input.rows;
+			dims[1] = input.cols;
+			dims[2] = input.channels();
 
 			desync(host);
 			host_data = (Type*)input.data;
@@ -316,7 +316,7 @@ namespace sk {
 
 		//from Tensor to Mat
 		operator cv::Mat() {
-			return cv::Mat(spans[0], spans[1], cv::DataType<Type>::type, host_data);
+			return cv::Mat(dims[0], dims[1], cv::DataType<Type>::type, host_data);
 		}
 
 		#ifdef DOESNT_WORK
@@ -326,8 +326,8 @@ namespace sk {
 				input.download(temp);
 
 				num_dims = temp.dims;
-				spans[0] = temp.rows;
-				spans[1] = temp.cols;
+				dims[0] = temp.rows;
+				dims[1] = temp.cols;
 
 				desync(host);
 				std::copy((Type*)temp.data, (Type*)temp.data[temp.rows * temp.cols], host_data);
