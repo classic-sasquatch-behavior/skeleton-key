@@ -58,7 +58,8 @@ The DIMS macros accept an argument for each dimension, and aquire the coordinate
 define coordinate variables with those names using the traditional/verbose method mentioned previously, which you can use in the rest of the kernel.
 
 the BOUNDS macros (BOUNDS_1D(span), BOUNDS_2D(span, span), BOUNDS_3D(span, span, span)) check to make sure a thread is within the prescribed spatial bounds 
-of the problem. the BOUNDS macros are equivalent to manually writing something like: if((row < 0)||(col < 0)||(row >= rows)||(col >= cols)){return;}. 
+of the problem. the BOUNDS macros are equivalent to manually writing something like: 
+```if((row < 0)||(col < 0)||(row >= rows)||(col >= cols)){return;}```
 Since kernels are often launched with excess threads which will cause memory errors if they fire, including a check like this ensures that these threads 
 will shut themselves down before wreaking any havoc. The BOUNDS macros expect as many arguments as they have dimensions, each one an integer which 
 describes the size of that dimension in elements.
