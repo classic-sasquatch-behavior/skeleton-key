@@ -38,33 +38,32 @@ void launch_add_by_element(sk::Tensor<int>& A){
 
 ## using the launch manager:
 
-the launch manager is a static struct which configures and stores your launch parameters for you (i.e. <<<num_blocks, threads_per_block>>>). 
+the launch manager is a static struct which configures and stores your launch parameters for you (i.e. ```<<<num_blocks, threads_per_block>>>```). 
 since it is a static struct, there is (in theory) only one launch manager object which is generated at compile time, and hovers around holding
 your launch parameters. 
 
-it has three functions, which can be invoked anywhere at any time: kernel_1d(span), kernel_2d(span, span), and kernel_3d(span, span, span). 
-calling one of these functions will configure the launch parameters stored in the manager object to create launch parameters describing 
+it has three functions, which can be invoked anywhere at any time in host code: ```kernel_1d(span), kernel_2d(span, span), and kernel_3d(span, span, span)```. calling one of these functions will configure the launch parameters stored in the manager object to create launch parameters describing 
 a kernel of the given dimensionality and the given size. when you want to actually launch the kernel, you pass in the num_blocks and the
-threads_per_block stored by the launch manager. I usually do this with the LAUNCH macro (\<\<\<LAUNCH>>>), which just evaluates to
-sk::configure::num_blocks, sk::configure::threads_per_block 
+threads_per_block stored by the launch manager. I usually do this with the LAUNCH macro (```<<<LAUNCH>>>```), which just evaluates to
+```sk::configure::num_blocks, sk::configure::threads_per_block``` 
 
 
 ## using the macros:
 
 Skeleton Key provides a series of macros to be used within kernels. The two main ones which are usually called at the start of every kernel are
-the DIMS macros (DIMS_1D(dim), DIMS_2D(dim, dim), DIMS_3D(dim, dim, dim)), and the BOUNDS macros (BOUNDS_1D(), BOUNDS_2D(), BOUNDS_3D()). 
+the DIMS macros (```DIMS_1D(dim), DIMS_2D(dim, dim), DIMS_3D(dim, dim, dim)```), and the BOUNDS macros (```BOUNDS_1D(), BOUNDS_2D(), BOUNDS_3D()```). 
 The DIMS macros accept an argument for each dimension, and aquire the coordinates of a thread for you so you dont have to derive them with
-"blockIdx.x * blockDim.x + threadDim.x". simply enter the names of your dimensions as arguments (e.g. row, col), and the DIMS macro will 
+```blockIdx.x * blockDim.x + threadDim.x```. simply enter the names of your dimensions as arguments (e.g. row, col), and the DIMS macro will 
 define coordinate variables with those names using the traditional/verbose method mentioned previously, which you can use in the rest of the kernel.
 
-the BOUNDS macros (BOUNDS_1D(span), BOUNDS_2D(span, span), BOUNDS_3D(span, span, span)) check to make sure a thread is within the prescribed spatial bounds 
+the BOUNDS macros (```BOUNDS_1D(span), BOUNDS_2D(span, span), BOUNDS_3D(span, span, span)```) check to make sure a thread is within the prescribed spatial bounds 
 of the problem. the BOUNDS macros are equivalent to manually writing something like: 
 ```if((row < 0)||(col < 0)||(row >= rows)||(col >= cols)){return;}```
 Since kernels are often launched with excess threads which will cause memory errors if they fire, including a check like this ensures that these threads 
 will shut themselves down before wreaking any havoc. The BOUNDS macros expect as many arguments as they have dimensions, each one an integer which 
 describes the size of that dimension in elements.
 
-there is one more series of macros included, which is more experimental. these are the FOR_MXN macros (FOR_MXN_EXCLUSIVE(), FOR_MXN_INCLUSIVE()). These create a set of two for loops which iterate over a square in space. they essentially represent a loop which plays out in 2d space as a M x N square centered on the starting thread. They are useful for 2D spatial convolution (as found in computer vision tasks). EXCLUSIVE versus INCLUSIVE changes whether the "home" coordinate is skipped or included. to use it, the first two arguments will be the names of your indices that you will be using later in the loop. These correspond to coordinates in the kernel context (i.e. your first and second dims plus some small offset). the third and fourth arguments denote the size of the loop: the values M and N as mentioned in the name of the macro. after these four arguments, enter the code to be executed at each step of the loop. example usage:
+there is one more series of macros included, which is more experimental. these are the FOR_MXN macros (```FOR_MXN_EXCLUSIVE(), FOR_MXN_INCLUSIVE()```). These create a set of two for loops which iterate over a square in space. they essentially represent a loop which plays out in 2d space as a M x N square centered on the starting thread. They are useful for 2D spatial convolution (as found in computer vision tasks). EXCLUSIVE versus INCLUSIVE changes whether the "home" coordinate is skipped or included. to use it, the first two arguments will be the names of your indices that you will be using later in the loop. These correspond to coordinates in the kernel context (i.e. your first and second dims plus some small offset). the third and fourth arguments denote the size of the loop: the values M and N as mentioned in the name of the macro. after these four arguments, enter the code to be executed at each step of the loop. example usage:
 
 ```
 FOR_MXN_EXCLUSIVE(n_first, n_second, 3, 3,
@@ -81,7 +80,7 @@ the Tensor struct is a straightforward container for 1d, 2d, 3d, and 4d matrices
 of data between host and device for the user. It tries not to transfer data between the host and device until it is necessary to do so, for performance 
 reasons. The memory management is automatic, and the user should never have to manually call the sync() or desync() functions in the course of normal use.
 
-both the device and host data are accessable through the parenthetical operator, (coord, coord, ...). to access the device data from within the 
+both the device and host data are accessable through the parenthetical operator, ```(coord, coord, ...)```. to access the device data from within the 
 kernel, an additional step must be taken. In the kernel definition, the user must specify sk::Device_Ptr rather than sk::Tensor. this will make 
 the compiler invoke the typecast between them. accessing the data in the Device_Ptr is done in the exact same way as on the host with Tensor, by
 using the parenthetical operator. note that Tensor and Device_Ptr are both templates, therefore the template argument must be specified when using 
