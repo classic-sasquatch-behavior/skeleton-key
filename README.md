@@ -63,12 +63,15 @@ Since kernels are often launched with excess threads which will cause memory err
 will shut themselves down before wreaking any havoc. The BOUNDS macros expect as many arguments as they have dimensions, each one an integer which 
 describes the size of that dimension in elements.
 
-there is one more series of macros included, which is more experimental. these are the FOR_MXN macros (FOR_MXN_EXCLUSIVE(), FOR_MXN_INCLUSIVE()).
-the api to use them is a work in progress (read: hot mess), so I wont explain exactly how to call them right now. but as for how they work, 
-they essentially represent a loop which plays out in 2d space as a M x N square centered on the starting thread. They are useful for 2D spatial 
-convolution (as found in computer vision tasks). The idea is that you insert your own code just like in a traditional for loop, to be executed 
-at each step with different iterators. it's basically a doubly nested for loop with automated bounds checking. the EXCLUSIVE version excludes 
-the starting element and only looks at the neighbors, whereas the INCLUSIVE version includes the starting element.
+there is one more series of macros included, which is more experimental. these are the FOR_MXN macros (FOR_MXN_EXCLUSIVE(), FOR_MXN_INCLUSIVE()). These create a set of two for loops which iterate over a square in space. they essentially represent a loop which plays out in 2d space as a M x N square centered on the starting thread. They are useful for 2D spatial convolution (as found in computer vision tasks). EXCLUSIVE versus INCLUSIVE changes whether the "home" coordinate is skipped or included. to use it, the first two arguments will be the names of your indices that you will be using later in the loop. These correspond to coordinates in the kernel context (i.e. your first and second dims plus some small offset). the third and fourth arguments denote the size of the loop: the values M and N as mentioned in the name of the macro. after these four arguments, enter the code to be executed at each step of the loop. example usage:
+
+```
+FOR_MXN_EXCLUSIVE(n_first, n_second, 3, 3,
+	//your code goes here. don't worry about commas, the macro is magic.
+);
+```
+
+there are also a couple of derived versions: FOR_3X3_INCLUSIVE and FOR_NEIGHBOR. these are simply shorthand which allows the programmer to bypass specifying the size of the loop (since conceptually the sizes are implicit). they call FOR_MXN_INCLUSIVE(3,3) and FOR_MXN_EXCLUSIVE(3,3) respectively.
 
 
 ## using the Tensor struct:
@@ -93,8 +96,6 @@ write some documentation on how to do this, pending interest.
 ## planned features:
 	
 interoperability between sk::Tensor and more external libraries
-	
-cleaning up the FOR_MXN macros
 	
 allow user configuration for names/cardinality of dimensions within Tensor
 
