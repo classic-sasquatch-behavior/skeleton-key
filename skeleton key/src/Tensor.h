@@ -48,9 +48,18 @@ namespace sk {
 
 
 		/************************ data ************************/
-
+		private:
 		Type* device_data = nullptr;
 		Type* host_data = nullptr;
+
+		public:
+		Type* data(sk::host_or_device memory) {
+			access(memory); 
+			switch(memory) {
+				case host: return host_data; break; 
+				case device: return device_data; break;
+			}
+		}
 
 		//for debug purposes
 		std::string name = "uninitialized";
@@ -69,14 +78,7 @@ namespace sk {
 
 		//get data from host. checks if we've been messing around with the device data, and if so synchronises
 		__host__ Type& operator ()(int first_coord, int second_coord = 0, int third_coord = 0, int fourth_coord = 0) {
-			switch (synced) {
-				case true: desync(host); break;
-				case false: switch (up_to_date) {
-					case device: sync(); desync(host); break;
-					default: break;
-				} break;
-			}
-
+			access(host);
 			return host_data[(((((first_coord * second_dim()) + second_coord) * third_dim()) + third_coord) * fourth_dim()) + fourth_coord];
 		}
 
@@ -182,6 +184,15 @@ namespace sk {
 			synced = false;
 		}
 
+		void access(sk::host_or_device changing) {
+
+			switch(synced){
+				case true: desync(changing); break;
+				case false: if (up_to_date != changing){sync(); desync(changing); } break;
+			}
+
+		}
+
 		//signals that the host and device portions of the tensor are synchronized without actually doing anything, used during initialization
 		void ready() {
 			synced = true;
@@ -233,13 +244,7 @@ namespace sk {
 
 		//converts Tensor to Device_Ptr, called implicitly when Tensor is passed to a kernel. checks if we've been messing with the host data, and if so synchronises
 		operator Device_Ptr<Type>() {
-			switch (synced) {
-				case true: desync(device); break;
-				case false: if (up_to_date == host) {
-					sync();
-					desync(device);
-				} break;
-			}
+			access(device);
 
 			return(Device_Ptr<Type>(dims, device_data));
 		}
