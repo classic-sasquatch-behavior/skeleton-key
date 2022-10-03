@@ -56,6 +56,15 @@ namespace sk {
 			num_blocks = { grid_dim_x, grid_dim_y, grid_dim_z };
 			threads_per_block = { block_dim_x, block_dim_y, block_dim_z };
 		}
+
+		static void kernel(std::vector<uint>dims) {
+			switch (dims.size()) {
+			case 1: kernel_1d(dims[0]); break;
+			case 2: kernel_2d(dims[0], dims[1]); break;
+			case 3: kernel_3d(dims[0], dims[1], dims[2]); break;
+			default: exit(EXIT_FAILURE); break;
+			}
+		}
 	}
 
 	#define LAUNCH sk::configure::num_blocks, sk::configure::threads_per_block

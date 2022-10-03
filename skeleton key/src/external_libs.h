@@ -5,6 +5,7 @@
 #include<cuda_runtime.h>
 
 //std
+#include<iostream>
 #include<string>
 #include<vector>
 

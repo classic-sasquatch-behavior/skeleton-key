@@ -4,25 +4,25 @@
 
 	//establish the coordinates of the current thread. this one is for 1d kernels								
 	#define DIMS_1D(_first_dim_) \
-		int _first_dim_ = (blockIdx.x * blockDim.x) + threadIdx.x; \
-		int & _FIRST_ = _first_dim_;
+		const int _first_dim_ = (blockIdx.x * blockDim.x) + threadIdx.x; \
+		const int & _FIRST_ = _first_dim_;
 
 	//establish the coordinates of the current thread. this one is for 2d kernels		
 	#define DIMS_2D(_first_dim_, _second_dim_) \
-		int _first_dim_ = (blockIdx.x * blockDim.x) + threadIdx.x; \
-		int _second_dim_ = (blockIdx.y * blockDim.y) + threadIdx.y; \
-		int & _FIRST_ = _first_dim_;\
-		int & _SECOND_ = _second_dim_;
+		const int _first_dim_ = (blockIdx.x * blockDim.x) + threadIdx.x; \
+		const int _second_dim_ = (blockIdx.y * blockDim.y) + threadIdx.y; \
+		const int & _FIRST_ = _first_dim_;\
+		const int & _SECOND_ = _second_dim_;
 
 
 	//establish the coordinates of the current thread. this one is for 3d kernels		
 	#define DIMS_3D(_first_dim_, _second_dim_, _third_dim_)\
-		int _first_dim_ = (blockIdx.x * blockDim.x) + threadIdx.x; \
-		int _second_dim_ = (blockIdx.y * blockDim.y) + threadIdx.y; \
-		int _third_dim_ = (blockIdx.z * blockDim.z) + threadIdx.z; \
-		int & _FIRST_ = _first_dim_;\
-		int & _SECOND_ = _second_dim_;\
-		int & _THIRD_ = _third_dim_;
+		const int _first_dim_ = (blockIdx.x * blockDim.x) + threadIdx.x; \
+		const int _second_dim_ = (blockIdx.y * blockDim.y) + threadIdx.y; \
+		const int _third_dim_ = (blockIdx.z * blockDim.z) + threadIdx.z; \
+		const int & _FIRST_ = _first_dim_;\
+		const int & _SECOND_ = _second_dim_;\
+		const int & _THIRD_ = _third_dim_;
 
 #pragma endregion
 
@@ -70,12 +70,12 @@
 #pragma region spatial operations
 
 	#define FOR_MXN_INCLUSIVE(_new_first_, _new_second_, _M_, _N_, ...)																  \
-	int _first_limit_ = (_M_ - (_M_ % 2)) / 2;																			   			  \
-	int _second_limit_ = (_N_ - (_N_ % 2)) / 2;																						  \
+	const int _first_limit_ = (_M_ - (_M_ % 2)) / 2;																			   			  \
+	const int _second_limit_ = (_N_ - (_N_ % 2)) / 2;																						  \
 		__pragma(unroll) for (int _n_first_ = -_first_limit_; _n_first_ < (_first_limit_ + (_M_ % 2)); _n_first_++) {				  \
 			__pragma(unroll) for (int _n_second_ = -_second_limit_; _n_second_ < (_second_limit_ + (_N_ % 2)); _n_second_++) {		  \
-				int _new_first_ = _FIRST_ + _n_first_;																				  \
-				int _new_second_ = _SECOND_ + _n_second_;																			  \
+				const int _new_first_ = _FIRST_ + _n_first_;																				  \
+				const int _new_second_ = _SECOND_ + _n_second_;																			  \
 				if((_new_first_ < 0)||(_new_second_ < 0)||(_new_first_ >= _FIRST_SPAN_)||(_new_second_ >= _SECOND_SPAN_ )){continue;} \
 				__VA_ARGS__;																										  \
 			}																														  \
@@ -84,12 +84,12 @@
 
 		//todo: implement contextual FIRST and SECOND objects
 	#define FOR_MXN_EXCLUSIVE(_new_first_, _new_second_, _M_, _N_, ...)														   \
-	int _first_limit_ = (_M_ - (_M_ % 2)) / 2;																			   	   \
-	int _second_limit_ = (_N_ - (_N_ % 2)) / 2;																				   \
+	const int _first_limit_ = (_M_ - (_M_ % 2)) / 2;																			   	   \
+	const int _second_limit_ = (_N_ - (_N_ % 2)) / 2;																				   \
 		__pragma(unroll) for (int _n_first_ = -_first_limit_; _n_first_ < (_first_limit_ + (_M_ % 2)); _n_first_++) {		   \
 			__pragma(unroll) for (int _n_second_ = -_second_limit_; _n_second_ < (_second_limit_ + (_N_ % 2)); _n_second_++) { \
-				int _new_first_ = _FIRST_ + _n_first_;																		   \
-				int _new_second_ = _SECOND_ + _n_second_;																	   \
+				const int _new_first_ = _FIRST_ + _n_first_;																		   \
+				const int _new_second_ = _SECOND_ + _n_second_;																	   \
 				if((_new_first_ < 0)||(_new_second_ < 0)||(_new_first_ >= _FIRST_SPAN_)||(_new_second_ >= _SECOND_SPAN_ )	   \
 								  ||((_new_first_ == _FIRST_)&&(_new_second_ == _SECOND_))) {continue;}						   \
 				__VA_ARGS__;																								   \
@@ -127,6 +127,10 @@
 		}
 
 	#define SELF _FIRST_, _SECOND_
+
+	#define DISTANCE (fabsf(_n_first_) + fabsf(_n_second_))
+
+	//#define INVERSE_DISTANCE (((_M_ + _N_)/2) - DISTANCE)
 
  #pragma endregion
 
